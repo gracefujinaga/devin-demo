@@ -24,7 +24,7 @@ def create_devin_session(skill_name: str, repository: str = "superset"):
     if not DEVIN_ORG_ID:
         raise ValueError("DEVIN_ORG_ID not set in environment variables")
 
-    # Use v3 API with org_id
+    # Try Bearer token with base64 key
     headers = {
         "Authorization": f"Bearer {DEVIN_API_KEY}",
         "Content-Type": "application/json"
