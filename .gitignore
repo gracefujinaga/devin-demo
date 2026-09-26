@@ -1,0 +1,19 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Output directories
+scan-results/
+reports/
+logs/
+pr_tracking/
+
+# OS
+.DS_Store
+Thumbs.db

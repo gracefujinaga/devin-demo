@@ -11,31 +11,13 @@ services:
       - ./.devin:/app/.devin
       - ./scan-results:/app/scan-results
       - ./reports:/app/reports
+      - ./logs:/app/logs
+      - ./pr_tracking:/app/pr_tracking
       # Mount your Superset code here for scanning
-      # - /path/to/your/superset:/app/superset
+      - /Users/gracefujinaga/superset:/app/superset
+    env_file:
+      - .env
     environment:
+      - SUPRESET_PATH=/app/superset
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-      - DEVIN_API_KEY=${DEVIN_API_KEY:-}
-    command: python scripts/run_security_scan.py
-
-  # Run all scans
-  full-scan:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    container_name: devin-full-scan
-    volumes:
-      - ./scripts:/app/scripts
-      - ./.devin:/app/.devin
-      - ./scan-results:/app/scan-results
-      - ./reports:/app/reports
-    environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
-      - DEVIN_API_KEY=${DEVIN_API_KEY:-}
-    command: >
-      bash -c "
-        python scripts/run_security_scan.py &&
-        python scripts/run_bug_scan.py &&
-        python scripts/run_latent_scan.py &&
-        python scripts/generate_scan_report.py
-      "
+    command: python scripts/run_simple_scan.py

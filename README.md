@@ -1,137 +1,60 @@
 # Devin Automated Code Quality Scanner
 
-An autonomous code quality scanning system using Devin CLI to detect security vulnerabilities, runtime errors, and latent bugs in the Apache Superset codebase.
+An autonomous code quality scanning system using Devin API to detect and remediate security vulnerabilities, runtime errors, and latent bugs in the Apache Superset codebase.
 
 ## Overview
 
-This system demonstrates how Devin CLI can be integrated into CI/CD pipelines to provide contextual code analysis that goes beyond traditional static analysis tools. It detects:
+This system demonstrates how Devin API can be integrated into CI/CD pipelines to provide contextual code analysis and automated remediation. It:
 
-- **Security vulnerabilities** - Contextual security issues that require understanding the security model
-- **Runtime errors** - Errors that only manifest during execution
-- **Logic errors** - Cross-file logic bugs that static analysis misses
-- **Latent bugs** - Edge cases and hidden issues
+- **Detects** - Security vulnerabilities, runtime errors, logic errors, latent bugs
+- **Remediates** - Automatically applies fixes via Devin API
+- **Observes** - Tracks findings and generates reports
 
 ## Quick Start
 
-### Option 1: Run with Docker (Recommended)
+### Setup
 
+1. Clone the repository
 ```bash
-# Clone the repository
 git clone https://github.com/gracefujinaga/devin-demo.git
 cd devin-demo
-
-# Run a single security scan
-docker-compose -f docker/docker-compose.yml run devin-scanner
-
-# Run all scans (security, bugs, latent)
-docker-compose -f docker/docker-compose.yml run full-scan
-
-# View results
-cat reports/scan-report-*.md
 ```
 
-### Option 2: Run Locally
-
+2. Configure API key
 ```bash
-# Clone the repository
-git clone https://github.com/gracefujinaga/devin-demo.git
-cd devin-demo
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install Devin CLI (adjust based on actual install method)
-npm install -g @devin/cli
-
-# Run security scan
-python scripts/run_security_scan.py
-
-# Run bug scan
-python scripts/run_bug_scan.py
-
-# Run latent bugs scan
-python scripts/run_latent_scan.py
-
-# Generate report
-python scripts/generate_scan_report.py
+cp .env.example .env
+# Edit .env and add your Devin API key
 ```
 
-## What Makes This Different
+3. Run with Docker
+```bash
+docker-compose -f docker/docker-compose.yml up
+```
 
-### Traditional Static Analysis Tools (mypy, ruff, pylint)
-- ✅ Catch type errors and style violations
-- ❌ Can't understand business logic
-- ❌ Can't check security model compliance
-- ❌ Can't analyze complex data flows
+### Configuration
 
-### Human Code Review
-- ✅ Deep understanding of context
-- ❌ Doesn't scale with codebase size
-- ❌ Inconsistent across reviewers
-- ❌ Fatigue leads to missed issues
-
-### Devin CLI
-- ✅ Understands codebase context (docs, patterns, architecture)
-- ✅ Checks security model compliance (reads SECURITY.md)
-- ✅ Scales to scan entire codebases
-- ✅ Consistent results every time
-- ✅ Can learn from codebase patterns
+Required environment variables in `.env`:
+```bash
+DEVIN_API_KEY=your_api_key_here
+DEVIN_ORG_ID=your_org_id_here
+GITHUB_TOKEN=your_github_token_here
+```
 
 ## Architecture
 
-### Skill-Based Design
+### Devin API Integration
 
-The system uses three focused skills:
+The system uses the Devin API to:
+1. Create sessions programmatically
+2. Execute analysis skills (security-check, bug-scan, latent-bugs)
+3. Retrieve findings and apply fixes
+4. Track session status and results
+
+### Skills
 
 1. **security-check** - Identifies vulnerabilities and security issues
-   - SQL injection patterns
-   - XSS vulnerabilities
-   - Authentication/authorization bypasses
-   - Dependency vulnerabilities
-
 2. **bug-scan** - Detects existing bugs and defects
-   - Runtime errors
-   - Logic errors
-   - API usage errors
-   - Configuration bugs
-
 3. **latent-bugs** - Finds hidden bugs and edge cases
-   - Edge cases
-   - Race conditions
-   - Resource leaks
-   - Boundary conditions
-
-### Key Architectural Decisions
-
-**Non-Interactive CLI Execution**
-```python
-# Scripts run Devin CLI in non-interactive mode
-subprocess.run(
-    ["devin", "--non-interactive", "/security-check"],
-    capture_output=True,
-    text=True,
-    timeout=3600
-)
-```
-
-**Structured JSON Output**
-```python
-results = {
-    "timestamp": timestamp,
-    "success": result.returncode == 0,
-    "stdout": result.stdout,
-    "stderr": result.stderr,
-    "findings": []
-}
-```
-
-**GitHub Actions Integration**
-```yaml
-- name: Run Security Check
-  run: |
-    python scripts/run_security_scan.py || true
-    echo "security_completed=true" >> $GITHUB_OUTPUT
-```
 
 ## Intentional Defects Demo
 
@@ -154,6 +77,18 @@ This system was tested against intentional defects introduced in Apache Superset
 - Issue: Accesses config["params"] without null check
 - Detection: Execution path analysis
 
+## Output
+
+### Scan Results
+- Location: `scan-results/` directory
+- Format: JSON files with structured findings
+- Categories: security, bugs, latent
+
+### Reports
+- Location: `reports/` directory
+- Format: JSON summary reports
+- Includes: Total findings, severity breakdown, detailed findings
+
 ## GitHub Actions Integration
 
 The system includes a GitHub Actions workflow for automated nightly scans:
@@ -171,29 +106,18 @@ on:
 gh workflow run nightly-scan.yml
 ```
 
-## Output
-
-### Scan Results
-- Location: `scan-results/` directory
-- Format: JSON files with structured findings
-- Categories: security, bugs, latent
-
-### Reports
-- Location: `reports/` directory
-- Format: Markdown summary reports
-- Includes: Total findings, severity breakdown, detailed findings
-
 ## Next Steps for Production
 
 ### Phase 1: Production Readiness
-1. Install Devin CLI in CI/CD pipeline
-2. Extract real findings from Devin output
-3. Implement actual PR creation (currently placeholder)
+1. Configure real Devin API key
+2. Test actual Devin API endpoints
+3. Implement real remediation (not simulated)
+4. Add GitHub token for PR creation
 
 ### Phase 2: Enterprise Hardening
 1. Add secret management (GitHub Actions secrets)
 2. Add access controls (who can trigger scans)
-3. Add audit logging (track all Devin invocations)
+3. Add audit logging (track all Devin API calls)
 
 ### Phase 3: Advanced Features
 1. Learning from historical data (reduce false positives)
@@ -204,7 +128,7 @@ gh workflow run nightly-scan.yml
 
 - Apache Superset Fork: https://github.com/gracefujinaga/superset
 - Original Superset: https://github.com/apache/superset
-- Devin CLI: https://devin.ai
+- Devin API Docs: https://docs.devin.ai/api-reference/overview
 
 ## License
 
