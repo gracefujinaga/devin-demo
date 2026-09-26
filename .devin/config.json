@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "read": true,
+    "write": true,
+    "exec": [
+      "git",
+      "python",
+      "pytest",
+      "npm",
+      "npx",
+      "node",
+      "pre-commit",
+      "docker"
+    ],
+    "denied": [
+      "sudo",
+      "rm -rf",
+      "rm",
+      "rmdir"
+    ]
+  },
+  "import_settings": {
+    "cursor": {
+      "enabled": true
+    },
+    "windsurf": {
+      "enabled": true
+    },
+    "claude_code": {
+      "enabled": true
+    }
+  }
+}

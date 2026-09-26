@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  devin-scanner:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: devin-scanner
+    volumes:
+      - ./scripts:/app/scripts
+      - ./.devin:/app/.devin
+      - ./scan-results:/app/scan-results
+      - ./reports:/app/reports
+      # Mount your Superset code here for scanning
+      # - /path/to/your/superset:/app/superset
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - DEVIN_API_KEY=${DEVIN_API_KEY:-}
+    command: python scripts/run_security_scan.py
+
+  # Run all scans
+  full-scan:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: devin-full-scan
+    volumes:
+      - ./scripts:/app/scripts
+      - ./.devin:/app/.devin
+      - ./scan-results:/app/scan-results
+      - ./reports:/app/reports
+    environment:
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - DEVIN_API_KEY=${DEVIN_API_KEY:-}
+    command: >
+      bash -c "
+        python scripts/run_security_scan.py &&
+        python scripts/run_bug_scan.py &&
+        python scripts/run_latent_scan.py &&
+        python scripts/generate_scan_report.py
+      "

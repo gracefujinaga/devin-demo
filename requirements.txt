@@ -1,0 +1,23 @@
+# Python dependencies for Devin Automated Code Quality Scanner
+
+# Standard library - no additional packages needed for basic functionality
+# These are included for future extensibility:
+
+# JSON handling (built-in, but listed for clarity)
+# json
+
+# Subprocess handling (built-in)
+# subprocess
+
+# Path handling (built-in)
+# pathlib
+
+# Datetime handling (built-in)
+# datetime
+
+# For GitHub integration (if using GitHub CLI via Python)
+# PyGithub>=1.59
+
+# For future enhancements:
+# requests>=2.31.0
+# pyyaml>=6.0
