@@ -21,8 +21,27 @@ def create_devin_session(skill_name: str, repository: str = "superset"):
     """Create a Devin session via API"""
     if not DEVIN_API_KEY:
         raise ValueError("DEVIN_API_KEY not set in environment variables")
-    if not DEVIN_ORG_ID:
-        raise ValueError("DEVIN_ORG_ID not set in environment variables")
+
+    # Get org_id from /self endpoint if not set
+    org_id = DEVIN_ORG_ID
+    if not org_id:
+        try:
+            headers = {
+                "Authorization": f"Bearer {DEVIN_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            response = requests.get(f"{DEVIN_API_BASE}/self", headers=headers, timeout=60)
+            response.raise_for_status()
+            user_data = response.json()
+            # Try to get org_id from response
+            org_id = user_data.get("organization_id") or user_data.get("org_id")
+            print(f"[{datetime.now().isoformat()}] Retrieved org_id: {org_id}")
+        except Exception as e:
+            print(f"Error getting org_id: {e}")
+            return {"error": str(e)}
+
+    if not org_id:
+        raise ValueError("Could not determine org_id")
 
     # Try Bearer token with base64 key
     headers = {
@@ -38,13 +57,14 @@ def create_devin_session(skill_name: str, repository: str = "superset"):
 
     try:
         response = requests.post(
-            f"{DEVIN_API_BASE}/organizations/{DEVIN_ORG_ID}/sessions",
+            f"{DEVIN_API_BASE}/organizations/{org_id}/sessions",
             headers=headers,
             json=payload,
             timeout=3600
         )
         response.raise_for_status()
-        return response.json()
+        result = response.json()
+        return result
     except requests.exceptions.RequestException as e:
         print(f"Error creating Devin session: {e}")
         return {"error": str(e)}
@@ -96,11 +116,11 @@ def run_scan_and_remediate(skill_name: str, repository_path: str):
             "mode": "simulated"
         }
 
-    session_id = session.get("id")
+    session_id = session.get("session_id")
     print(f"[{timestamp}] Session created: {session_id}")
 
     # Wait for session to complete (simplified - in real code, poll for status)
-    # For demo, we'll simulate finding issues
+    # For demo, we'll use simulated findings based on the actual defects
     findings = simulate_findings(skill_name)
     
     print(f"[{timestamp}] Found {len(findings)} issues")
@@ -112,7 +132,8 @@ def run_scan_and_remediate(skill_name: str, repository_path: str):
         "session_id": session_id,
         "findings": findings,
         "timestamp": timestamp,
-        "mode": "api"
+        "mode": "api",
+        "session_url": session.get("url")
     }
 
 def simulate_findings(skill_name: str):
