@@ -35,10 +35,16 @@ docker-compose -f docker/docker-compose.yml up
 
 Required environment variables in `.env`:
 ```bash
-DEVIN_API_KEY=your_api_key_here
+DEVIN_API_KEY=your_api_key_here  # Should start with cog_ for v3 API
 DEVIN_ORG_ID=your_org_id_here
 GITHUB_TOKEN=your_github_token_here
 ```
+
+**Note:** The current demo uses simulated findings as a fallback. To use the actual Devin API:
+1. Generate a Service User API key in Devin Cloud (Settings > Service Users)
+2. The key should start with `cog_` prefix
+3. Update `.env` with the new key
+4. The system will automatically use the API when available
 
 ## Architecture
 

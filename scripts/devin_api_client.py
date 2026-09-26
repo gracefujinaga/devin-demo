@@ -13,28 +13,32 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DEVIN_API_KEY = os.getenv("DEVIN_API_KEY")
-DEVIN_API_BASE = "https://api.devin.ai"  # Adjust based on actual API URL
+DEVIN_ORG_ID = os.getenv("DEVIN_ORG_ID")
+DEVIN_API_BASE = "https://api.devin.ai/v3"  # v3 API
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 def create_devin_session(skill_name: str, repository: str = "superset"):
     """Create a Devin session via API"""
     if not DEVIN_API_KEY:
         raise ValueError("DEVIN_API_KEY not set in environment variables")
+    if not DEVIN_ORG_ID:
+        raise ValueError("DEVIN_ORG_ID not set in environment variables")
 
+    # Use v3 API with org_id
     headers = {
         "Authorization": f"Bearer {DEVIN_API_KEY}",
         "Content-Type": "application/json"
     }
 
+    # v3 API uses prompt instead of skill
     payload = {
-        "skill": skill_name,
-        "repository": repository,
-        "mode": "non-interactive"
+        "prompt": f"Run the {skill_name} skill to analyze the {repository} codebase for security vulnerabilities, bugs, and latent issues",
+        "repository": repository
     }
 
     try:
         response = requests.post(
-            f"{DEVIN_API_BASE}/v1/sessions",
+            f"{DEVIN_API_BASE}/organizations/{DEVIN_ORG_ID}/sessions",
             headers=headers,
             json=payload,
             timeout=3600
