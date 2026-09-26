@@ -70,17 +70,27 @@ def get_session_status(session_id: str):
 def run_scan_and_remediate(skill_name: str, repository_path: str):
     """
     Run a scan and apply fixes
-    Simplified version for demo
+    Simplified version for demo - falls back to simulated findings if API fails
     """
     timestamp = datetime.now().isoformat()
     print(f"[{timestamp}] Starting {skill_name} scan...")
 
-    # Create Devin session
+    # Try to create Devin session
     session = create_devin_session(skill_name)
     
     if "error" in session:
-        print(f"Failed to create session: {session['error']}")
-        return {"success": False, "error": session['error']}
+        print(f"[{timestamp}] API call failed, using simulated findings for demo")
+        print(f"[{timestamp}] Error: {session['error']}")
+        # Fallback to simulated findings for demo
+        findings = simulate_findings(skill_name)
+        print(f"[{timestamp}] Found {len(findings)} issues (simulated)")
+        return {
+            "success": True,
+            "session_id": "demo-simulated",
+            "findings": findings,
+            "timestamp": timestamp,
+            "mode": "simulated"
+        }
 
     session_id = session.get("id")
     print(f"[{timestamp}] Session created: {session_id}")
@@ -97,7 +107,8 @@ def run_scan_and_remediate(skill_name: str, repository_path: str):
         "success": True,
         "session_id": session_id,
         "findings": findings,
-        "timestamp": timestamp
+        "timestamp": timestamp,
+        "mode": "api"
     }
 
 def simulate_findings(skill_name: str):
